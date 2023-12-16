@@ -1,0 +1,416 @@
+Resources:
+  UserDataTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: userData
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"  
+      KeySchema:
+        - AttributeName: "username"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+    
+  TaskDataTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: taskData
+      AttributeDefinitions:
+        - AttributeName: "taskId"
+          AttributeType: "S"  
+      KeySchema:
+        - AttributeName: "taskId"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  LambdaRegister:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: RegistrationFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: registration.zip
+      
+  LambdaLogin:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: LoginFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: login.zip
+      Environment:
+        Variables:
+          JWT_SECRET: SecretJinay  
+
+  LambdaCreate:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CreateFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: createtask.zip
+  
+  LambdaUpdate:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: UpdateFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: updatetask.zip
+
+  LambdaDelete:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: DeleteFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: deletetask.zip
+
+  LambdaGetAllTask:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: GetAllTaskFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: getalltask.zip
+
+  LambdaGetTaskByStatus:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: GetTaskByStatusFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: gettaskbystatus.zip
+
+  LambdaGetTaskByTitle:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: GetTaskByTitleFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: gettaskbytitle.zip
+
+  LambdaEventTrigger:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: EventTriggerFunction
+      Runtime: nodejs14.x
+      Handler: index.handler
+      Role: 'arn:aws:iam::966503693276:role/LabRole'
+      Code:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: eventtrigger.zip
+  
+  MyApi:
+    Type: 'AWS::ApiGatewayV2::Api'
+    Properties:
+      Name: MyApi
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - '*'
+        AllowMethods:
+          - '*'
+        ExposeHeaders:
+          - '*'  
+      
+  LambdaPermissionApiGatewayRegister:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaRegister
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+
+  LambdaPermissionApiGatewayLogin:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaLogin
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+  
+  LambdaPermissionApiGatewayCreate:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaCreate
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'            
+
+  LambdaPermissionApiGatewayUpdate:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaUpdate
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+  
+  LambdaPermissionApiGatewayDelete:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaDelete
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+
+  LambdaPermissionApiGatewayAllTask:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaGetAllTask
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+
+  LambdaPermissionApiGatewayTaskStatus:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaGetTaskByStatus
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+
+  LambdaPermissionApiGatewayTaskTitle:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaGetTaskByTitle
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:us-east-1:966503693276:${MyApi}/*/*'
+
+  
+  UserRegistrationIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaRegister.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+  
+  UserLoginIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaLogin.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  CreateIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaCreate.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  UpdateIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaUpdate.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  DeleteIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaDelete.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  AllTaskIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaGetAllTask.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  TaskStatusIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaGetTaskByStatus.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  TaskTitleIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+        ApiId: !Ref MyApi
+        IntegrationType: AWS_PROXY
+        IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaGetTaskByTitle.Arn}/invocations
+        PayloadFormatVersion: '2.0'
+
+  UserRegistrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: POST /user-registration
+      Target: !Sub integrations/${UserRegistrationIntegration}
+
+  UserLoginRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: POST /user-login
+      Target: !Sub integrations/${UserLoginIntegration}
+
+  CreateIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: POST /create-task 
+      Target: !Sub integrations/${CreateIntegration}
+
+  UpdateIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: PUT /update-task
+      Target: !Sub integrations/${UpdateIntegration}
+
+  DeleteIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: DELETE /delete-task
+      Target: !Sub integrations/${DeleteIntegration}
+
+  AllTaskIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: GET /get-user-tasks
+      Target: !Sub integrations/${AllTaskIntegration}
+
+  TaskStatusIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: GET /getTaskByStatus
+      Target: !Sub integrations/${TaskStatusIntegration}                        
+
+  TaskTitleIntegrationRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref MyApi
+      RouteKey: GET /getTaskByTitle
+      Target: !Sub integrations/${TaskTitleIntegration}
+
+  UserRegistrationStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+        ApiId: !Ref MyApi
+        StageName: '$default'
+        AutoDeploy: true
+
+  MySNSTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties: 
+      DisplayName: 'Confirm User Registration'  
+      TopicName: 'confirm-user-registration'
+
+  LambdaPermissionSNSTopic:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaRegister
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref MySNSTopic
+
+  MyLambdaSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      Protocol: 'lambda'
+      TopicArn: !Ref MySNSTopic
+      Endpoint: !GetAtt LambdaRegister.Arn      
+
+  MyEventRule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Description: Reminders
+      Name: my-event
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      ScheduleExpression: 'rate(3 minutes)'
+      ScheduleExpressionTimezone: America/Halifax
+      State: ENABLED
+      Target:
+        Arn: !GetAtt LambdaEventTrigger.Arn
+        RoleArn: arn:aws:iam::966503693276:role/LabRole
+
+  FrontendApplication:
+    Type: 'AWS::ElasticBeanstalk::Application'
+    Properties:
+      ApplicationName: todo-buddy-app
+      Description: Application
+  ApplicationVersion:
+    Type: 'AWS::ElasticBeanstalk::ApplicationVersion'
+    Properties:
+      ApplicationName: !Ref FrontendApplication
+      Description: Application Version
+      SourceBundle:
+        S3Bucket: my-lambda-bucket-todo
+        S3Key: app-package.zip
+  FrontendEnvironment:
+    Type: 'AWS::ElasticBeanstalk::Environment'
+    Properties:
+      ApplicationName: !Ref FrontendApplication
+      Description: Environment
+      EnvironmentName: TodoProject 
+      SolutionStackName: 64bit Amazon Linux 2 v5.8.7 running Node.js 18
+      VersionLabel: !Ref ApplicationVersion
+      OperationsRole: 'arn:aws:iam::966503693276:role/LabRole'
+      Tier:
+        Name: WebServer
+        Type: Standard
+      OptionSettings:
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: EnvironmentType
+          Value: SingleInstance
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: ServiceRole
+          Value: 'arn:aws:iam::966503693276:role/LabRole'
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: IamInstanceProfile
+          Value: LabInstanceProfile
+        - Namespace: "aws:elasticbeanstalk:application:environment"
+          OptionName: "REACT_APP_API_ENDPOINT"
+          Value: !Sub "https://${MyApi}.execute-api.us-east-1.amazonaws.com"  
+
+Outputs:
+  ApplicationURL:
+    Description: "Application URL"
+    Value: !Sub "http://${FrontendEnvironment.EndpointURL}"        

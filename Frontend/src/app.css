@@ -1,0 +1,23 @@
+/* Styling for the header */
+.header {
+    background-color: #030900;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    margin: 10px;
+    margin-bottom: 50px;
+  }
+  
+  .header h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  /* Style for the App container */
+  .App {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Add any additional styling for your App component here */
+  
